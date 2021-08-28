@@ -1,9 +1,8 @@
 import io from "socket.io-client";
 
-const env = process.env.NODE_ENV;
+// const env = process.env.NODE_ENV;
 
-const targetServer =
-  env === "development" ? "http://13.125.222.70:3000" : "https://itda.shop:443";
+const targetServer = "https://whwhwh.shop/:443";
 
 let socket;
 
