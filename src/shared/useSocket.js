@@ -2,7 +2,7 @@ import io from "socket.io-client";
 
 // const env = process.env.NODE_ENV;
 
-const targetServer = "https://whwhwh.shop/:443";
+const targetServer = "https://whwhwh.shop:443";
 
 let socket;
 
