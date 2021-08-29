@@ -23,7 +23,7 @@ const Intro = () => {
       <Template>
         <Container>
           <Headline>
-            <Title>쉽고, 빠르고, 가벼운, 협업 솔루션</Title>
+            <Title>테스트 배포</Title>
             <SubTitle>진정한 협업이 궁금하다면</SubTitle>
             <Button
               onClick={() => {
