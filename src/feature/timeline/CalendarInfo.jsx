@@ -17,6 +17,9 @@ import flex from "../../themes/flex";
 import { setModalId, __deleteSchedule } from "../../redux/modules/calendar.js";
 import { __addSchedule } from "../../redux/modules/calendar";
 import { __loadCardById } from "../../redux/modules/board";
+import { body_2, body_3, sub_2 } from "../../themes/textStyle";
+import { hiddenScroll } from "../../themes/hiddenScroll";
+import { scrollbar } from "../../themes/scrollbar";
 
 const CalendarInfo = () => {
   const dispatch = useDispatch();
@@ -81,18 +84,18 @@ const CalendarInfo = () => {
     <>
       <Container>
         <TitleBox>
-          <Text type="body_1" color="black">
+          <ClickedDate type="body_1" color="black">
             {selectedDate.clone().format("M월 D일")}
-          </Text>
-          <IconBtn _onClick={clickCreateBtn} padding="5px">
+          </ClickedDate>
+          <AddBtn _onClick={clickCreateBtn} padding="5px">
             <Icon icon="plus-lg" size="24px" color="var(--darkgrey)" />
-          </IconBtn>
+          </AddBtn>
         </TitleBox>
         {cardIsZero && (
           <Info>
-            <Text type="sub_2" color="grey">
+            <InfoText type="sub_2" color="grey">
               일정이 없습니다.
-            </Text>
+            </InfoText>
           </Info>
         )}
         {currentSchedules &&
@@ -120,15 +123,12 @@ const CalendarInfo = () => {
         {Object.keys(modalContent).length !== 0 && (
           <CardModal showModal={showModal} setShowModal={setShowModal}>
             <ModalForms content={modalContent} source="calendar" />
-            <TodosHeader type="sub_2" color="black">
-              할 일
-            </TodosHeader>
             <Todos cardId={modalId} />
             <BtnBox>
               <Button
                 type="button"
                 shape="green-fill"
-                size="300"
+                size="200"
                 _onClick={() => setShowModal(false)}
               >
                 닫기
@@ -142,19 +142,41 @@ const CalendarInfo = () => {
 };
 
 const Container = styled.section`
+  --header: 48px;
+
+  ${hiddenScroll};
   ${flex("start", "start", false)}
   width: 260px;
-  height: 100%;
+  height: calc(100vh - var(--header));
   background-color: var(--white);
   border-right: 1px solid var(--line);
-  overflow-y: hidden;
+  overflow-y: auto;
+
+  ${({ theme }) => theme.device.tablet} {
+    --nav: 60px;
+    width: 100%;
+    height: calc(100% - var(--nav));
+    border-right: 0;
+    overflow-y: auto;
+  }
 `;
 
 const TitleBox = styled.div`
   ${flex("between")};
+  flex-shrink: 0;
   width: 100%;
   height: 65px;
   padding: 0 20px;
+
+  ${({ theme }) => theme.device.mobile} {
+    height: 40px;
+  }
+`;
+
+const ClickedDate = styled(Text)`
+  ${({ theme }) => theme.device.mobile} {
+    ${sub_2};
+  }
 `;
 
 const Info = styled.div`
@@ -174,11 +196,13 @@ const RemoveBtn = styled(IconBtn)`
 const CurrentSchedule = styled.div`
   ${flex("start")};
   position: relative;
+  flex-shrink: 0;
   width: 100%;
   height: 42px;
   background-color: var(--white);
   padding: 0 20px;
   cursor: pointer;
+  margin-right: 0;
 
   &::before {
     flex-shrink: 0;
@@ -203,18 +227,30 @@ const ScheduleText = styled(Text)`
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow-x: hidden;
-`;
 
-const TodosHeader = styled(Text)`
-  padding: 0 40px;
-  margin-bottom: 21px;
+  ${({ theme }) => theme.device.mobile} {
+    ${body_2};
+  }
 `;
 
 const BtnBox = styled.div`
   ${flex()};
   width: 100%;
-  margin-top: -10px;
-  margin-bottom: 40px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+`;
+
+const InfoText = styled(Text)`
+  ${({ theme }) => theme.device.mobile} {
+    ${body_3}
+  }
+`;
+
+const AddBtn = styled(IconBtn)`
+  ${({ theme }) => theme.device.mobile} {
+    /* 디자인 상 여기에서 숨겨지고 CalendarHeader에서 보여줘야 함. 결정 필요 */
+    /* visibility: hidden; */
+  }
 `;
 
 export default CalendarInfo;
