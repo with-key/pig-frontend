@@ -9,8 +9,9 @@ import { Button } from "../../elem/index";
 import { head_2 } from "../../themes/textStyle";
 import RoomInput from "./RoomInput";
 
-import { __searchRoom } from "../../redux/modules/room";
+import { __searchRoom, __getInviteCodeRoom } from "../../redux/modules/room";
 
+// 검색창
 const SearchBar = ({ joinModal, addModal }) => {
   const dispatch = useDispatch();
   const [searchContent, setSearchContent] = useState("");
@@ -18,6 +19,7 @@ const SearchBar = ({ joinModal, addModal }) => {
   const { searchedRoom } = useSelector((state) => state.room);
   const searchRef = useRef();
 
+  // 모바일에서 검색창 바깥 클릭 시 검색창 안보이도록 함
   const handleClickOutside = (e) => {
     e.stopPropagation();
     if (searchRef.current && !searchRef.current.contains(e.target)) {
@@ -30,13 +32,19 @@ const SearchBar = ({ joinModal, addModal }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [searchRef]);
 
-
+  // 방 입장하기 버튼 클릭 시 JoinModal 열기
   const openJoinModal = (e) => {
+    // 검색 키워드 있는 상태에서 JoinModal 열면, 
+    // 검색 화면 사라지도록 함
     if (searchContent.length > 0) {
       dispatch(__searchRoom(""));
     }
+    // 방 정보 초기화하고 모달 열기
+    dispatch(__getInviteCodeRoom(""));
     joinModal();
   };
+
+  // 방 만들기 버튼 클릭 시 AddModal 열기
   const openAddModal = (e) => {
     if (searchContent.length > 0) {
       dispatch(__searchRoom(""));
@@ -44,19 +52,23 @@ const SearchBar = ({ joinModal, addModal }) => {
     addModal();
   };
 
+  // 검색키워드 저장
   const changeSearchContent = (keyword) => {
     dispatch(__searchRoom(keyword));
     setSearchContent(keyword);
   };
 
+  // onKeyUp과 debounce를 사용하여 서버 요청을 줄임
   const delay = debounce(changeSearchContent, 500);
 
+  // onKeyPress 사용하여 enter 사용 시 검색
   const _onKeyPress = (e) => {
     if (e.key === "Enter") {
       dispatch(__searchRoom(searchContent));
     }
   };
 
+  // 모바일 화면에서 검색창 display 기능
   const openMobileSearch = () => {
     setIsShowSearch((pre) => !pre);
   };
@@ -119,7 +131,7 @@ const SearchBar = ({ joinModal, addModal }) => {
           </InputBox>
           <BtnContainer>
             <Button size="150" onClick={openAddModal}>
-              <Btn>
+              <Btn className="make-room">
                 <BtnContent>
                   <Icon icon="plus-lg" size="24px" />
                   <Span>방 만들기</Span>
@@ -128,7 +140,7 @@ const SearchBar = ({ joinModal, addModal }) => {
             </Button>
             <BtnBox>
               <Button shape="green-outline" size="150" onClick={openJoinModal}>
-                <Btn>
+                <Btn className="enter-room">
                   <BtnContent>
                     <Icon icon="enter" size="24px" /> <Span>방 입장</Span>
                   </BtnContent>
@@ -172,11 +184,13 @@ const Wrapper = styled.div`
 const WrapperMobileItem = styled.div`
   ${mobileOnly};
   width: 100%;
+  margin-bottom: 25px;
 `;
 
 const IconSet = styled.div`
   display: flex;
   justify-content: flex-end;
+  min-width: 300px;
 `;
 
 const IconBox = styled.div`
@@ -195,12 +209,8 @@ const WrapperItem = styled.div`
   align-items: center;
   max-width: 1440px;
   width: 100%;
-  padding: 0 80px;
+  padding: 0 70px;
   margin: 15px auto 0 auto;
-  @media (max-width: 1440px) {
-    justify-content: center;
-    padding: 0 10px;
-  }
 `;
 
 const InputBox = styled.div`
@@ -209,7 +219,7 @@ const InputBox = styled.div`
   height: 50px;
   margin: 0 auto;
   ${({ theme }) => theme.device.mobile} {
-    width: 320px;
+    width: 90%;
   }
 `;
 
@@ -242,7 +252,6 @@ const BtnContent = styled.div`
 const BtnBox = styled.div`
   position: relative;
   height: 50px;
-  /* margin-left: -1px; */
   margin-left: 20px;
 `;
 
@@ -252,8 +261,6 @@ const BtnContainer = styled.div`
   width: 330px;
   height: 50px;
   margin-left: 40px;
-  /* ${({ theme }) => theme.device.mobile} {
-  } */
 `;
 
 export default SearchBar;

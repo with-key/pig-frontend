@@ -15,6 +15,7 @@ import RoomInput from "./RoomInput";
 //redux
 import { __getInviteCodeRoom, __joinRoom } from "../../redux/modules/room";
 
+// 방 입장하기 모달(다른 사람이 만든 방에 초대코드로 입장)
 const JoinRoomModal = ({ showModal, joinModal }) => {
   const dispatch = useDispatch();
   const [inviteCode, setInviteCode] = useState("");
@@ -24,10 +25,12 @@ const JoinRoomModal = ({ showModal, joinModal }) => {
   const isInviteRoom =
     _room.inviteCode === inviteCode.inviteCode ? true : false;
 
+  // 초대코드 입력 시 방 정보를 미리 띄우기 위해 리덕스에서 방 정보 받아옴 
   const { roomImage, roomName, tag } = useSelector(
     (state) => state.room.inviteCodeRoom
   );
 
+  // inviteCode(36자) 입력, 방 정보 서버에 요청
   const changeHandler = async (keyword) => {
     setInviteCode(keyword);
     if (keyword.length === 36) {
@@ -36,12 +39,15 @@ const JoinRoomModal = ({ showModal, joinModal }) => {
     }
   };
 
+  // inviteCode 요청 수 줄이기 위해 debounce 사용
   const debounceFunc = debounce(changeHandler, 200);
 
+  // inviteCode===""이라면 disabled 처리
   const disabled = inviteCode === "";
+  // disabled 아닐 때 방 입장하기
   const join = () => {
     if (!disabled) {
-      dispatch(__joinRoom({inviteCode}));
+      dispatch(__joinRoom({ inviteCode }));
     }
     setInviteCode("");
     setIsInfo(false);
@@ -100,14 +106,16 @@ const JoinRoomModal = ({ showModal, joinModal }) => {
               />
             </InputBox>
             <BtnBox>
-              <Button shape="green-outline" size="150" _onClick={cancel}>
-                취소
-              </Button>
-              <Btn>
-                <Button disabled={disabled} size="150" _onClick={join}>
+              <LeftBtn>
+                <Button shape="green-outline" _onClick={cancel}>
+                  취소
+                </Button>
+              </LeftBtn>
+              <RightBtn>
+                <Button disabled={disabled} _onClick={join}>
                   입장하기
                 </Button>
-              </Btn>
+              </RightBtn>
             </BtnBox>
           </ModalContent>
         </ModalContainer>
@@ -169,6 +177,10 @@ const DefaultImage = styled.div`
 const ImageBox = styled.div`
   margin: 0 auto;
   padding-top: 46px;
+  ${({ theme }) => theme.device.mobile} {
+    padding-top: 0;
+    padding-bottom: 30px;
+  }
 `;
 
 const Image = styled.div`
@@ -188,15 +200,11 @@ const InputBox = styled.div`
   margin: 0 auto;
   width: 324px;
   ${({ theme }) => theme.device.mobile} {
-    width: 320px;
+    width: 100%;
+    max-width: 340px;
+    min-width: 270px;
+    padding: 0 10px 0 10px;
   }
-`;
-
-const InviteCodeInput = styled.input`
-  width: 100%;
-  height: 46px;
-  padding: 0 10px 0 10px;
-  border: 1px solid var(--grey);
 `;
 
 const Content = styled.div`
@@ -221,9 +229,19 @@ const BtnBox = styled.div`
   width: 300px;
   margin: 0 auto;
   padding-bottom: 46px;
+  ${({ theme }) => theme.device.mobile} {
+    max-width: 280px;
+    min-width: 240px;
+    padding: 30px 10px 46px 10px;
+  }
 `;
 
-const Btn = styled.div`
+const LeftBtn = styled.div`
+  width: 100%;
+`;
+
+const RightBtn = styled.div`
+  width: 100%;
   margin-left: -1px;
 `;
 

@@ -46,13 +46,22 @@ const WSMobileNav = ({ url }) => {
     history.push(`${pureUrl}/timeline`);
   };
 
+  const toChat = () => {
+    history.push(`${pureUrl}/chat`);
+  };
+
   const checkTab = (keyword) => {
     if (history.location.pathname.includes(keyword) === true) return true;
     else return false;
   };
 
   const checkMain = () => {
-    if (!checkTab("doc") && !checkTab("board") && !checkTab("timeline"))
+    if (
+      !checkTab("doc") &&
+      !checkTab("board") &&
+      !checkTab("timeline") &&
+      !checkTab("chat")
+    )
       return true;
     else return false;
   };
@@ -75,7 +84,7 @@ const WSMobileNav = ({ url }) => {
         <Icon icon="calendar" size="24px" />
         <NavText>타임라인</NavText>
       </NavBtn>
-      <NavBtn>
+      <NavBtn onClick={toChat} here={checkTab("chat")}>
         <Icon icon="chat" size="24px" />
         <NavText>채팅</NavText>
       </NavBtn>

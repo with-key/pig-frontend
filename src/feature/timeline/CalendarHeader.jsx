@@ -4,18 +4,18 @@ import { useDispatch, useSelector } from "react-redux";
 
 // redux
 import { setCurrent } from "../../redux/modules/date";
+import { __loadBucket } from "../../redux/modules/board";
+import { __addSchedule } from "../../redux/modules/calendar";
 
 // elem
 import { Button, IconBtn, Text } from "../../elem";
 import flex from "../../themes/flex";
 import Icon from "../../components/Icon";
 import { body_2 } from "../../themes/textStyle";
-import { __addSchedule } from "../../redux/modules/calendar";
 import { useParams } from "react-router-dom";
 import CardModal from "../task/CardModal";
 import ModalForms from "../task/ModalForms";
 import Todos from "../task/Todos";
-import { __loadBucket } from "../../redux/modules/board";
 
 const CalendarHeader = () => {
   const dispatch = useDispatch();
@@ -23,9 +23,11 @@ const CalendarHeader = () => {
   const [showModal, setShowModal] = useState(false);
   const current = useSelector((state) => state.date.current);
   const modalId = useSelector((state) => state.calendar.modalId);
-  const currentContent = useSelector((state) => state.calendar.currentSchedule);
   const buckets = useSelector((state) => state.board.columns);
-  console.log(buckets);
+  const { scheduleList } = useSelector((state) => state.calendar);
+
+  // 카드 생성 즉시, ModalForms 의 내용을 변경했을 때 Update되는 리덕스 store 값
+  const currentContent = scheduleList[scheduleList.length - 1] ?? {};
 
   const showLastMonth = () => {
     dispatch(setCurrent(current.clone().subtract(1, "month")));
@@ -64,7 +66,11 @@ const CalendarHeader = () => {
           </NavIcons>
         </Nav>
         <>
-          <AddBtn _onClick={clickCreateBtn} padding="5px">
+          <AddBtn
+            _onClick={clickCreateBtn}
+            padding="5px"
+            className="add-schedule"
+          >
             <Icon icon="plus-lg" size="24px" color="var(--darkgrey)" />
           </AddBtn>
         </>
@@ -95,6 +101,7 @@ const Header = styled.div`
   width: 100%;
   height: 60px;
   padding: 0 20px;
+  background-color: var(--white);
 
   ${({ theme }) => theme.device.mobile} {
     height: 50px;
