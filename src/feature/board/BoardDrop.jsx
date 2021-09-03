@@ -3,8 +3,8 @@ import styled, { css } from "styled-components";
 
 // component & elem
 import Icon from "../../components/Icon";
-import Avatar from "../../elem/Avatar";
 import flex from "../../themes/flex";
+import MemberImg from "../../elem/MemberImg";
 
 const Item = ({ children, _onClick, componentType, color, target }) => {
   if (componentType === "colorPicker")
@@ -42,7 +42,7 @@ const Container = ({
   history,
   componentType,
   bgColor,
-  avatar,
+  memberStatus,
 }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const modalEl = useRef();
@@ -89,8 +89,11 @@ const Container = ({
           setIsMenuVisible((pre) => !pre);
         }}
       >
-        {!avatar && <Icon icon="member-plus" size="24px" color="var(--grey)" />}
-        {avatar && <Avatar target={avatar} size="30" />}
+        {memberStatus.length === 0 && (
+          <Icon icon="member-plus" size="24px" color="var(--grey)" />
+        )}
+        {memberStatus.length !== 0 && <MemberImg memberStatus={memberStatus} />}
+
         {isMenuVisible && (
           <ItemWrapper history={history} direction={direction} ref={modalEl}>
             {children}
@@ -103,6 +106,7 @@ const Container = ({
 
 // ---- color picker ---- //
 const ColorPicker = styled.div`
+  flex-shrink: 0;
   width: 20px;
   height: 20px;
   background-color: ${(props) => props.theme.colors[props.bgColor]};
@@ -129,10 +133,10 @@ const ColorItem = styled.div`
 
 // ---- default drop down ---- //
 const DropdownBtn = styled.div`
-  ${flex("center", "center")}
+  ${flex("end", "center")}
   position: relative;
   cursor: pointer;
-  width: 30px;
+  width: 130px;
   height: 30px;
   background-color: var(--white);
 `;
@@ -149,12 +153,6 @@ const ItemWrapper = styled.div`
   -moz-box-shadow: 6px 6px 20px 0px rgba(21, 21, 21, 0.15);
   z-index: var(--indexDrop);
   overflow: hidden;
-  /* div:nth-child(1) {
-    border-radius: 4px 4px 0 0;
-  }
-  div:last-child {
-    border-radius: 0 0 4px 4px;
-  } */
 `;
 
 const Link = styled.div`
@@ -180,6 +178,7 @@ const Link = styled.div`
         `;
       }
     }}
+  }
 `;
 
 const BoardDrop = {

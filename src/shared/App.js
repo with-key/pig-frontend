@@ -2,8 +2,6 @@ import { useEffect, useCallback } from "react";
 import Router from "./Router";
 import { ThemeProvider } from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
-import _ from "lodash";
-
 import Header from "../components/Header";
 import GlobalStyles from "../shared/GlobalStyles";
 import theme from "../themes/theme";
@@ -29,7 +27,7 @@ const App = () => {
   } = useSelector((state) => state.router);
 
   const result =
-    pathname.includes("workspace") || pathname.includes("password");
+    pathname.includes("workspace") || pathname.includes("resetPassword");
 
   useEffect(() => {
     if (window.innerWidth < 768) {
@@ -77,11 +75,9 @@ const App = () => {
     [isShowSidebar, dispatch, isMobile]
   );
 
-  // debounce를 너무 길게주면 부자연스러움
   useEffect(() => {
-    window.addEventListener("resize", _.debounce(confirmMobile, 200));
-    return () =>
-      window.removeEventListener("resize", _.debounce(confirmMobile, 200));
+    window.addEventListener("resize", confirmMobile);
+    return () => window.removeEventListener("resize", confirmMobile);
   }, [dispatch, confirmMobile]);
 
   return (

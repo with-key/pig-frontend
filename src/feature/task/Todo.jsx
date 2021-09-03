@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled, { css } from "styled-components";
 import { Input, Text } from "../../elem";
 import { useSelector } from "react-redux";
@@ -16,7 +16,7 @@ import { useParams } from "react-router-dom";
 import Icon from "../../components/Icon";
 import InputToggle from "../../components/InputToggle";
 import flex from "../../themes/flex";
-import { body_3, body_4, button } from "../../themes/textStyle";
+import { body_3, button } from "../../themes/textStyle";
 import Avatar from "../../elem/Avatar";
 
 const Todo = ({ todo }) => {
@@ -25,7 +25,6 @@ const Todo = ({ todo }) => {
   const my = useSelector((state) => state.todos.myStatus);
   const isCheckedList = todo.members; // 이 투두에 참여한 팀원
   const _all = team.concat(my); // 모든 팀원
-  console.log(_all);
 
   const [itemClicked, setItemClicked] = useState(false);
   const { roomId } = useParams();
@@ -57,16 +56,6 @@ const Todo = ({ todo }) => {
     }
   };
 
-  const getAvatarObj = useCallback(() => {
-    const avatarIdx =
-      _all &&
-      isCheckedList.length > 0 &&
-      _all.findIndex((member) => member.userId === isCheckedList[0].memberId);
-
-    const avatarObj = avatarIdx === -1 ? false : _all[avatarIdx];
-    return avatarObj;
-  }, [_all, isCheckedList]);
-
   return (
     <Container>
       <>
@@ -88,7 +77,6 @@ const Todo = ({ todo }) => {
           )}
         </label>
       </>
-
       <TodoItem
         itemClicked={itemClicked}
         ref={ItemEl}
@@ -103,47 +91,52 @@ const Todo = ({ todo }) => {
             saveFunc={editFunc}
             value={todo.todoTitle}
             padding
+            limit={20}
           />
         </TodoInputToggle>
-        <TodoMembers>
-          <BoardDrop.Container
-            direction="right"
-            type="default"
-            avatar={getAvatarObj()}
-            shadow
-          >
-            {_all &&
-              _all.map((member, idx) => {
-                const target =
-                  isCheckedList.findIndex(
-                    (seletedMember) => seletedMember.memberId === member.userId
-                  ) === -1
-                    ? false
-                    : true;
-                return (
-                  <BoardDrop.Item
-                    key={idx}
-                    target={target}
-                    _onClick={() => {
-                      dispatch(
-                        __memberHandler(roomId, todo.todoId, member.userId)
-                      );
-                    }}
-                  >
-                    <Member target={target}>
-                      <Avatar target={member} size={24} />
-                      <Nickname type="body_3">{member.nickname}</Nickname>
-                    </Member>
-                  </BoardDrop.Item>
-                );
-              })}
-          </BoardDrop.Container>
-          <TodoMembersCnt> + {todo.members.length}</TodoMembersCnt>
-        </TodoMembers>
+        <BoardDrop.Container
+          direction="right"
+          type="default"
+          memberStatus={isCheckedList}
+          shadow
+        >
+          {_all &&
+            _all.map((member, idx) => {
+              const target =
+                isCheckedList.findIndex(
+                  (seletedMember) => seletedMember.memberId === member.userId
+                ) === -1
+                  ? false
+                  : true;
+              return (
+                <BoardDrop.Item
+                  key={idx}
+                  target={target}
+                  _onClick={() => {
+                    dispatch(
+                      __memberHandler(
+                        roomId,
+                        todo.todoId,
+                        member.userId,
+                        member.color,
+                        member.avatar,
+                        member.nickname
+                      )
+                    );
+                  }}
+                >
+                  <Member target={target}>
+                    <Avatar target={member} size={24} />
+                    <Nickname>{member.nickname}</Nickname>
+                  </Member>
+                </BoardDrop.Item>
+              );
+            })}
+        </BoardDrop.Container>
         <RemoveTodoIcon>
           <Icon
             icon="remove"
-            size="14px"
+            size="20px"
             color="var(--grey)"
             onClick={deleteTodoHandler}
           />
@@ -155,58 +148,29 @@ const Todo = ({ todo }) => {
 
 const Container = styled.div`
   ${flex("between", "center")}
-  width: 478px;
-  margin: 0 auto;
+  width: 100%;
+  padding: 0 20px;
+  gap: 10px;
 `;
 
 const RemoveTodoIcon = styled.div`
   ${flex("center", "cetner")}
-  visibility: hidden;
-  width: 20px;
-  height: 20px;
+  margin-left: 10px;
+  cursor: pointer;
 `;
 
 const TodoItem = styled.div`
   ${flex("between", "center")};
-  width: 446px;
+  width: 100%;
   min-height: 46px;
-  padding: 0 12px;
   border: 1px solid var(--line);
+  padding: 0 10px;
   cursor: pointer;
-
-  ${(props) =>
-    props.itemClicked
-      ? css`
-          border: 1px solid var(--main);
-
-          ${RemoveTodoIcon} {
-            visibility: visible;
-          }
-        `
-      : ""}
-
-  &:hover {
-    ${RemoveTodoIcon} {
-      visibility: visible;
-    }
-  }
-`;
-
-const TodoMembers = styled.div`
-  ${flex("between", "center")}
-  width: 60px;
-  gap: 5px;
-`;
-
-const TodoMembersCnt = styled.div`
-  ${body_4}
-  color: var(--grey);
-  width: 20px;
 `;
 
 const TodoInputToggle = styled.div`
-  ${body_3}
-  width: 300px;
+  ${body_3};
+  width: 70%;
 `;
 
 const CheckboxIcon = styled(Icon)`
@@ -215,7 +179,8 @@ const CheckboxIcon = styled(Icon)`
   height: 20px;
 `;
 
-const Nickname = styled(Text)`
+const Nickname = styled.div`
+  ${body_3};
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -226,7 +191,6 @@ const Member = styled.div`
   width: 100px;
   ${flex("start", "cetner")}
   ${button}
-
   ${Nickname} {
     margin-left: 10px;
     color: ${(props) => (props.target ? "var(--white)" : "var(--darkgrey)")};

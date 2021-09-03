@@ -1,28 +1,42 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
+// compo & elem
 import Icon from "../../components/Icon";
+import CardModal from "../task/CardModal";
+import ModalForms from "../task/ModalForms";
+import Todos from "../task/Todos";
+import { Button, IconBtn, Text } from "../../elem";
 
-import { IconBtn, Text } from "../../elem";
+// utill
 import flex from "../../themes/flex";
 
 // redux
 import { setModalId, __deleteSchedule } from "../../redux/modules/calendar.js";
-import { __addSchedule } from "../../redux/modules/calendar";
+import { __loadCardById } from "../../redux/modules/board";
+import { body_2, body_3, sub_2 } from "../../themes/textStyle";
+import { hiddenScroll } from "../../themes/hiddenScroll";
 
-const CalendarInfo = ({ setShowModal }) => {
-  const { roomId } = useParams();
+const CalendarInfo = () => {
   const dispatch = useDispatch();
-
+  const modalId = useSelector((state) => state.calendar.modalId);
+  const currentContent = useSelector((state) => state.calendar.card);
   const { selectedDate } = useSelector((state) => state.date);
-  const buckets = useSelector((state) => state.board.columns);
-
   const { scheduleList } = useSelector((state) => state.calendar);
 
+  const [modalContent, setModalContent] = useState({});
+  const [showModal, setShowModal] = useState(false);
+
+  const { roomId } = useParams();
   const targetFormat = selectedDate.clone().format("YYYYMMDD");
 
+  useEffect(() => {
+    setModalContent(currentContent);
+  }, [currentContent]);
+
+  // handler
   const currentSchedules = useMemo(() => {
     const schedules = scheduleList.filter(
       (schedule, idx) =>
@@ -32,18 +46,13 @@ const CalendarInfo = ({ setShowModal }) => {
     return schedules;
   }, [scheduleList, targetFormat]);
 
-  const clickCreateBtn = useCallback(() => {
-    const bucketId = Object.keys(buckets)[0];
-    setShowModal((pre) => !pre);
-    dispatch(__addSchedule(roomId, bucketId));
-  }, [buckets, dispatch, roomId, setShowModal]);
-
   const clickSchedule = useCallback(
     (cardId) => {
       setShowModal((pre) => !pre);
       dispatch(setModalId(cardId));
+      dispatch(__loadCardById(roomId, cardId));
     },
-    [dispatch, setShowModal]
+    [dispatch, setShowModal, roomId]
   );
 
   const deleteSchedule = useCallback(
@@ -64,20 +73,17 @@ const CalendarInfo = ({ setShowModal }) => {
 
   return (
     <>
-      <Container>
+      <Container className="calendar-info">
         <TitleBox>
-          <Text type="body_1" color="black">
+          <ClickedDate type="body_1" color="black">
             {selectedDate.clone().format("M월 D일")}
-          </Text>
-          <IconBtn _onClick={clickCreateBtn} padding="5px">
-            <Icon icon="plus-lg" size="24px" color="var(--darkgrey)" />
-          </IconBtn>
+          </ClickedDate>
         </TitleBox>
         {cardIsZero && (
           <Info>
-            <Text type="sub_2" color="grey">
+            <InfoText type="sub_2" color="grey">
               일정이 없습니다.
-            </Text>
+            </InfoText>
           </Info>
         )}
         {currentSchedules &&
@@ -101,25 +107,64 @@ const CalendarInfo = ({ setShowModal }) => {
               </RemoveBtn>
             </CurrentSchedule>
           ))}
+
+        {Object.keys(modalContent).length !== 0 && (
+          <CardModal showModal={showModal} setShowModal={setShowModal}>
+            <ModalForms content={modalContent} source="calendar" />
+            <Todos cardId={modalId} />
+            <BtnBox>
+              <Button
+                type="button"
+                shape="green-fill"
+                size="200"
+                _onClick={() => setShowModal(false)}
+              >
+                닫기
+              </Button>
+            </BtnBox>
+          </CardModal>
+        )}
       </Container>
     </>
   );
 };
 
 const Container = styled.section`
+  --header: 48px;
+
+  ${hiddenScroll};
   ${flex("start", "start", false)}
   width: 260px;
-  height: 100%;
+  height: calc(100vh - var(--header));
   background-color: var(--white);
   border-right: 1px solid var(--line);
-  overflow-y: hidden;
+  overflow-y: auto;
+
+  ${({ theme }) => theme.device.tablet} {
+    --nav: 60px;
+    width: 100%;
+    height: calc(100% - var(--nav));
+    border-right: 0;
+    overflow-y: auto;
+  }
 `;
 
 const TitleBox = styled.div`
   ${flex("between")};
+  flex-shrink: 0;
   width: 100%;
   height: 65px;
   padding: 0 20px;
+
+  ${({ theme }) => theme.device.mobile} {
+    height: 40px;
+  }
+`;
+
+const ClickedDate = styled(Text)`
+  ${({ theme }) => theme.device.mobile} {
+    ${sub_2};
+  }
 `;
 
 const Info = styled.div`
@@ -139,11 +184,13 @@ const RemoveBtn = styled(IconBtn)`
 const CurrentSchedule = styled.div`
   ${flex("start")};
   position: relative;
+  flex-shrink: 0;
   width: 100%;
   height: 42px;
   background-color: var(--white);
   padding: 0 20px;
   cursor: pointer;
+  margin-right: 0;
 
   &::before {
     flex-shrink: 0;
@@ -168,6 +215,23 @@ const ScheduleText = styled(Text)`
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow-x: hidden;
+
+  ${({ theme }) => theme.device.mobile} {
+    ${body_2};
+  }
+`;
+
+const BtnBox = styled.div`
+  ${flex()};
+  width: 100%;
+  margin-top: 30px;
+  margin-bottom: 30px;
+`;
+
+const InfoText = styled(Text)`
+  ${({ theme }) => theme.device.mobile} {
+    ${body_3}
+  }
 `;
 
 export default CalendarInfo;

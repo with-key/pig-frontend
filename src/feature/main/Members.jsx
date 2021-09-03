@@ -8,18 +8,26 @@ import { scrollbar } from "../../themes/scrollbar";
 import flex from "../../themes/flex";
 import { useSelector } from "react-redux";
 import { body_1 } from "../../themes/textStyle";
+import { mobileHidden } from "../../themes/responsive";
 
 const Members = () => {
   const memberStatus = useSelector((state) => state.todos.memberStatus);
+  const colorAry = ["yellow", "orange", "mint", "blue"];
 
   return (
     <Container>
       <MembersHeader>팀원 현황</MembersHeader>
-      <MyStatus />
-      {memberStatus &&
-        memberStatus.map((member) => (
-          <MemberStatus key={member.userId} member={member} />
-        ))}
+      <StatusContent>
+        <MyStatus />
+        {memberStatus &&
+          memberStatus.map((member, idx) => (
+            <MemberStatus
+              key={member.userId}
+              member={member}
+              graphColor={colorAry[idx % 4]}
+            />
+          ))}
+      </StatusContent>
     </Container>
   );
 };
@@ -29,10 +37,15 @@ const Container = styled.section`
   --project: 160px;
   --minusHeight: calc(var(--header) + var(--project));
 
+  ${mobileHidden}
   ${scrollbar};
   height: calc(100vh - var(--minusHeight));
   padding: 18px 20px;
   overflow-y: auto;
+`;
+
+const StatusContent = styled.div`
+  width: 100%;
 `;
 
 const MembersHeader = styled.div`

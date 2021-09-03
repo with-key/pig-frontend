@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import styled from "styled-components";
-import { sub_1 } from "../themes/textStyle";
+import { body_3, sub_1 } from "../themes/textStyle";
 
 const Textarea = ({
   value,
@@ -9,6 +9,7 @@ const Textarea = ({
   placeholder,
   rows,
   minHeight,
+  maxLength,
   ...rest
 }) => {
   const ref = useRef(null);
@@ -34,6 +35,7 @@ const Textarea = ({
 
   return (
     <Wrapper
+      maxLength={maxLength}
       value={value}
       name={name}
       onChange={_onChange}
@@ -52,5 +54,9 @@ const Wrapper = styled.textarea`
   width: 100%;
   resize: none;
   overflow-y: visible;
+
+  ${({ theme }) => theme.device.mobile} {
+    ${(props) => props.mobileText === "body_3" && `${body_3}`}
+  }
 `;
 export default Textarea;

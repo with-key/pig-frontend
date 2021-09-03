@@ -1,18 +1,20 @@
 import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
-import flex from "../../themes/flex";
-import { Text } from "../../elem";
-import Icon from "../../components/Icon";
+import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import ReactTooltip from "react-tooltip";
+
 import Graph from "./Graph";
 import Tags from "./Tags";
+import Icon from "../../components/Icon";
+
+import flex from "../../themes/flex";
 import { body_4 } from "../../themes/textStyle";
-import ReactTooltip from "react-tooltip";
 import MyAvatar from "../../elem/MyAvatar";
+import { Text } from "../../elem";
 
 // redux & api
 import { __editMyStatus } from "../../redux/modules/todos";
-import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
 
 //etc
 const MyStatus = () => {
@@ -70,8 +72,9 @@ const MyStatus = () => {
                 name="desc"
                 value={editInfo.desc || ""}
                 onChange={onChangeHandler}
-                placeholder="팀원들에게 남기고 싶은 메시지를 입력하세요"
+                placeholder="나의 메시지를 입력하세요 (최대 25자)"
                 autoComplete="off"
+                maxLength="25"
               />
               <MyInfoEditInput
                 type="text"
@@ -80,6 +83,7 @@ const MyStatus = () => {
                 onChange={onChangeHandler}
                 placeholder="나의 역할 또는 태그로 나를 표현하세요"
                 autoComplete="off"
+                maxLength="200"
               />
             </>
           </form>
@@ -105,7 +109,7 @@ const MyStatus = () => {
           <span>{nickname}</span>
         </ReactTooltip>
         <GraphBox>
-          <Graph color="mint" height="15px" percent={memberPercent} />
+          <Graph color="blue" height="15px" percent={memberPercent} />
         </GraphBox>
         <ActiveEdit
           onClick={() => {
@@ -171,6 +175,11 @@ const MyStatus = () => {
 
 const Container = styled.article`
   border-bottom: 1px solid var(--line);
+  ${({ theme }) => theme.device.mobile} {
+    border: 1px solid red;
+    width: 100%;
+    padding: 20px;
+  }
 `;
 
 // 수정모드

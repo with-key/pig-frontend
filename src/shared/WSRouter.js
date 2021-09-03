@@ -8,6 +8,11 @@ import DocView from "../pages/DocView";
 import Board from "../pages/Board";
 import Calendar from "../pages/Calendar";
 
+import InformationM from "../pages/InformationM";
+import StatusM from "../pages/StatusM";
+import MytodosM from "../pages/MytodosM";
+import ChatM from "../pages/ChatM";
+
 const WSRouter = ({ path }) => {
   return (
     <Switch>
@@ -18,6 +23,10 @@ const WSRouter = ({ path }) => {
       <Route path={`${path}/doc/:docId/edit`} component={DocEdit} exact />
       <Route path={`${path}/board`} component={Board} exact />
       <Route path={`${path}/timeline`} component={Calendar} exact />
+      <Route path={`${path}/main/information`} component={InformationM} exact />
+      <Route path={`${path}/main/status`} component={StatusM} exact />
+      <Route path={`${path}/main/mytodos`} component={MytodosM} exact />
+      <Route path={`${path}/chat`} component={ChatM} exact />
     </Switch>
   );
 };

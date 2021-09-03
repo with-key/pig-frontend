@@ -4,7 +4,7 @@ import produce from "immer";
 import { bucketApi } from "../../api/bucketApi";
 import { cardApi } from "../../api/cardApi";
 import { __reqError } from "./error";
-import { editSchedule } from "./calendar";
+import { editSchedule, loadCardByIdToCalendar } from "./calendar";
 
 /**
  * action type
@@ -187,7 +187,9 @@ export const __loadCard = (roomId) => async (dispatch) => {
     });
 
     dispatch(loadCard(loadedCards));
-  } catch (e) {}
+  } catch (e) {
+    dispatch(__reqError(e));
+  }
 };
 
 // 카드상세조회
@@ -195,8 +197,9 @@ export const __loadCardById = (roomId, cardId) => async (dispatch) => {
   try {
     const { data } = await cardApi.getCardById(roomId, cardId);
     dispatch(loadCardById(data));
+    dispatch(loadCardByIdToCalendar(data));
   } catch (e) {
-    console.log(`카드 불러오기 실패 ${e}`);
+    dispatch(__reqError(e));
   }
 };
 
@@ -228,7 +231,7 @@ export const __createCard =
 
       dispatch(createCard(newCard, newCardOrder, bucketId));
     } catch (e) {
-      console.log(`카드 생성 실패! ${e}`);
+      dispatch(__reqError(e));
     }
   };
 
@@ -251,7 +254,7 @@ export const __updateCardLocate =
       dispatch(updateCardLocate(cardId, buckets));
       await cardApi.editCardLocation(roomId, paramBuckets);
     } catch (e) {
-      console.log(`card 옮기기 실패! ${e}`);
+      dispatch(__reqError(e));
     }
   };
 
@@ -280,7 +283,7 @@ export const __updateCardLocateOtherBucket =
         destinationBucketId
       );
     } catch (e) {
-      console.log(`card 옮기기 실패! ${e}`);
+      dispatch(__reqError(e));
     }
   };
 
@@ -320,7 +323,7 @@ export const __deleteCard =
       const newCardOrder = currentCardOrder.filter((card) => card !== cardId);
       dispatch(deleteCard(bucketId, newCardOrder, newCards));
     } catch (e) {
-      console.log(`카드 삭제실패! ${e}`);
+      dispatch(__reqError(e));
     }
   };
 
@@ -411,9 +414,12 @@ export const board = handleActions(
 
         draft.columns[destinationBucketId].cardOrder = destinationBucketOrder;
         draft.columns[sourceBucketId].cardOrder = sourceBucketOrder;
-        if (state.cards) {
-          draft.cards[payload.cardId].bucketId = destinationBucketId;
-        }
+        // 아래 코드 주석 후에도 정상 작동으로 보여, 일단 임시로 주석처리함 (카드 복사 버그 수정과 관련된 코드 였음)
+        // if (state.cards) {
+        //   // console.log(state.cards);
+        //   // console.log(payload.cardId);
+        //   // draft.cards[payload.cardId].bucketId = destinationBucketId;
+        // }
       }),
 
     [UPDATE_CARD_INFOS]: (state, { payload }) =>

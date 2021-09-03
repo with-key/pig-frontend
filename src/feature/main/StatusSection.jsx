@@ -7,7 +7,7 @@ import Members from "./Members";
 
 const StatusSection = () => {
   return (
-    <Container>
+    <Container className="status">
       <ProjectStatus />
       <Members />
     </Container>
@@ -17,9 +17,15 @@ const StatusSection = () => {
 const Container = styled.div`
   --header: 48px;
   --minusHeight: calc(var(--header));
-  width: 350px;
-  height: calc(100vh - var(--minusHeight));
+  grid-area: Status;
   border-right: 1px solid var(--line);
+  background-color: var(--white);
+
+  ${({ theme }) => theme.device.mobile} {
+    height: 100%;
+    border-bottom: 1px solid var(--line);
+    border-right: 0;
+  }
 `;
 
 export default React.memo(StatusSection);

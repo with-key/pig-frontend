@@ -1,50 +1,38 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
+import { useParams, useRouteMatch } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
-// component
-import MarkDownEditor from "../../components/MarkDownEditor";
-import MarkDownViewer from "../../components/MarkDownViewer";
-import Tags from "./Tags";
-
-// elem
-import { Text, Textarea, IconBtn } from "../../elem";
-import { head_2, sub_2 } from "../../themes/textStyle";
-import Icon from "../../components/Icon";
-import flex from "../../themes/flex";
+import InfoTitle from "./InfoTitle";
+import InfoTags from "./InfoTags";
+import InfoSubTitle from "./InfoSubTitle";
+import InfoDesc from "./InfoDesc";
+import { hiddenScroll } from "../../themes/hiddenScroll";
+import { desktopOnly, mobileOnly } from "../../themes/responsive";
 
 // redux & api
-import { useParams } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
 import { __editRoomDetail } from "../../redux/modules/room";
+import InfoHeader from "./InfoHeader";
 
-const Information = () => {
+const Information = ({ detailpage }) => {
   const { roomId } = useParams();
+  const { url } = useRouteMatch();
+
+  const dispatch = useDispatch();
+
+  const isMobile = useSelector((state) => state.resize.isMobile);
+  const room = useSelector((state) => state.room.roomInfos);
+
+  const { roomName, desc, tag, subtitle, roomImage } = room;
+
+  const editorRef = useRef();
+
   const [editMode, setEditMode] = useState(false);
   const [editedInfo, setEditedInfo] = useState({});
-  const editorRef = useRef();
-  const dispatch = useDispatch();
-  const room = useSelector((state) => state.room.roomInfos);
-  const my = useSelector((state) => state.user.user.userId);
-  const { roomName, desc, tag, subtitle, master } = room;
 
   useEffect(() => {
     setEditedInfo({ roomName, desc, tag, subtitle }); // onChange input value
   }, [roomName, desc, tag, subtitle]);
-
-  // Editor option
-  const mainEditorOpt = {
-    previewStyle: "tab",
-    initialEditType: "markdown",
-    useCommandShortcut: true,
-    previewHighlight: false,
-    height: "200px",
-    ref: editorRef,
-    initialValue: desc,
-  };
-
-  const mainViewerOpt = {
-    initialValue: desc,
-  };
 
   const getContent = () => {
     const instance = editorRef.current.getInstance();
@@ -57,12 +45,20 @@ const Information = () => {
       alert("제목을 한 글자 이상 작성해주세요.");
       return;
     }
-    const currentContent = getContent();
 
-    const newInfo = {
-      ...editedInfo,
-      desc: currentContent,
-    };
+    let newInfo;
+    if (isMobile) {
+      newInfo = {
+        ...editedInfo,
+      };
+    } else {
+      const currentContent = getContent();
+
+      newInfo = {
+        ...editedInfo,
+        desc: currentContent,
+      };
+    }
 
     dispatch(__editRoomDetail(roomId, newInfo));
     setEditMode((pre) => !pre);
@@ -72,135 +68,71 @@ const Information = () => {
     setEditedInfo((pre) => ({ ...pre, [key]: value }));
   }, []);
 
-  if (editMode) {
-    return (
-      <Container>
-        <TitleBox>
-          <TitleInput
-            type="text"
-            placeholder="제목을 입력하세요"
-            value={editedInfo.roomName}
-            onChange={(e) => handleChange("roomName", e.target.value)}
-          />
-          <TextBtn onClick={clickSave}>
-            <Text type="button" color="darkgrey">
-              완료
-            </Text>
-          </TextBtn>
-        </TitleBox>
-        <TagContainer>
-          <TagsInput
-            type="text"
-            placeholder="태그는 ','으로 구분하여 입력해주세요."
-            value={editedInfo.tag}
-            onChange={(e) => handleChange("tag", e.target.value)}
-          />
-        </TagContainer>
-        <Textarea
-          value={editedInfo.subtitle}
-          minHeight={40}
-          _onChange={(e) => handleChange("subtitle", e.target.value)}
-        />
-        <EditorContainer>
-          <MarkDownEditor option={mainEditorOpt} />
-        </EditorContainer>
-      </Container>
-    );
-  }
+  const infos = {
+    editMode,
+    setEditMode,
+    editedInfo,
+    handleChange,
+    detailpage,
+  };
 
   return (
-    <Container>
-      <TitleBox>
-        <Text type="head_2" color="black">
-          {roomName}
-        </Text>
-        {my === master && (
-          <IconBtn
-            _onClick={() => {
-              setEditMode((pre) => !pre);
-            }}
-          >
-            <Icon icon="edit" color="#757575" size="24px" />
-          </IconBtn>
-        )}
-      </TitleBox>
-      <TagContainer>
-        <Tags tag={tag} gap="14" textType="sub_2" color="dargrey" />
-      </TagContainer>
-      {subtitle && (
-        <SubTitle type="sub_1" color="grey">
-          {subtitle}
-        </SubTitle>
-      )}
-      <Line />
-      <ViewerContainer padding={true}>
-        {desc && <MarkDownViewer option={mainViewerOpt} />}
-      </ViewerContainer>
-    </Container>
+    <>
+      {detailpage && <InfoHeader clickSave={clickSave} url={url} {...infos} />}
+      <Container detailpage={detailpage} className="information">
+        <RoomImg src={roomImage} />
+        <InfoTitle clickSave={clickSave} {...infos} />
+        <InfoTags {...infos} />
+        <InfoSubTitle {...infos} />
+        {!editMode && <Line />}
+        <InfoDesc ref={editorRef} {...infos} />
+      </Container>
+    </>
   );
 };
 
 const Container = styled.section`
+  ${hiddenScroll};
   width: 100%;
-  min-height: 40%;
-  max-height: 60%;
+  min-height: 250px;
   padding: 20px;
   border-bottom: 1px solid var(--line);
   overflow-y: auto;
+  grid-area: Information;
+  background-color: var(--white);
+
+  ${({ theme }) => theme.device.mobile} {
+    min-height: initial;
+    max-height: 50vh;
+    ${(props) => {
+      if (props.detailpage) {
+        return css`
+          padding: 0 20px;
+          border-bottom: 0;
+          max-height: initial;
+        `;
+      }
+    }}
+  }
 `;
 
-const TitleBox = styled.div`
-  ${flex("between")}
-  width: 100%;
-  height: 52px;
-  margin-bottom: 20px;
-`;
-
-const TitleInput = styled.input`
-  ${head_2};
-  width: 100%;
-  height: 52px;
-  color: var(--black);
-`;
-
-const TextBtn = styled.button`
-  width: 78px;
-  height: 42px;
-`;
-
-const TagContainer = styled.div`
-  height: 30px;
-  margin-bottom: 25px;
-`;
-
-const TagsInput = styled.input`
-  ${sub_2};
-  width: 100%;
-  height: 100%;
-`;
-
-const SubTitle = styled(Text)`
-  min-height: 40px;
-  word-break: break-all;
-  padding: 0 12px;
+const RoomImg = styled.div`
+  ${mobileOnly};
+  width: 40px;
+  height: 40px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background-image: ${(props) => `url(${props.src});`};
+  background-size: cover;
+  background-position: center center;
 `;
 
 const Line = styled.div`
+  ${desktopOnly}
   height: 1px;
   width: 100%;
   margin: 18px 0;
   padding: 0 12px;
   background-color: var(--line);
 `;
-
-const ViewerContainer = styled.div`
-  max-width: 100%;
-  padding: ${(props) => props.padding && "0 12px;"};
-  padding-bottom: 18px;
-`;
-
-const EditorContainer = styled.div`
-  min-height: 200px;
-`;
-
 export default React.memo(Information);

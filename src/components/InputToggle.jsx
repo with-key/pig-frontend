@@ -56,6 +56,7 @@ const InputToggle = ({
             ref={myRef}
             rows="10"
             name={name}
+            maxLength={maxLength ? maxLength : limit}
             placeholder={placeholder}
             value={currentValue}
             onChange={(e) => setCurrentValue(e.target.value)}
@@ -94,7 +95,7 @@ const InputToggle = ({
           autoFocus
         />
 
-        {limit && CountText(limit, currentValue.length)}
+        {/* <HelpMsg>{limit && CountText(limit, currentValue.length)}</HelpMsg> */}
       </InputBox>
     );
   };
@@ -140,8 +141,6 @@ const EditInput = styled.input`
   border: none;
   font-size: inherit;
   outline: none;
-  text-align: center;
-  border-bottom: 1px solid var(--line);
   text-align: left;
 `;
 
@@ -164,5 +163,11 @@ const TextAreaResult = styled(Text)`
 const InputBox = styled.div`
   position: relative;
 `;
+
+// const HelpMsg = styled.div`
+//   ${({ theme }) => theme.device.mobile} {
+//     display: none;
+//   }
+// `;
 
 export default InputToggle;

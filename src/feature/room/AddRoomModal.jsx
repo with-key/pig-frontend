@@ -13,6 +13,7 @@ import RoomInput from "./RoomInput";
 import { __addRoom } from "../../redux/modules/room";
 import ImageModule from "../../components/ImageModule";
 
+// 방 만들기 기능 수행하는 모달
 const AddRoomModal = ({ showModal, addModal }) => {
   const dispatch = useDispatch();
   const [roomImg, setRoomImg] = useState("");
@@ -25,12 +26,14 @@ const AddRoomModal = ({ showModal, addModal }) => {
     tag: "",
   });
 
+  // ImageModule의 함수, s3 이용해 url 형태로 파일 저장
   const getImgUrlFromS3 = async (callback, file) => {
     const result = await callback(file);
     setRoomImg(result);
     setImgUrl("");
   };
 
+  //방 정보를 저장, 방 정보가 바뀔 때마다 실행
   const changeHandler = (e) => {
     const { value, name } = e.target;
     setContents({ ...contents, [name]: value });
@@ -44,23 +47,29 @@ const AddRoomModal = ({ showModal, addModal }) => {
     setImgUrl(e.target.value);
   };
 
+  //tag를 받아서 , 기준으로 나누어 배열로 만듦
   const tagList = tagText.tag.split(",");
 
+  //방 이름이 없으면 disabled 처리
   const disabled = contents.roomName === "";
+  
+  //서버에 방 정보 저장 => 방 만들기
   const saveFile = () => {
     if (!disabled) {
       dispatch(__addRoom(contents, roomImg, tagList));
     }
+    //방 정보 초기화(이후 모달 띄울 때 기본 화면 띄우기 위해)
     setContents({
       roomName: "",
       subtitle: "",
       tag: "",
     });
-    addModal();
+    addModal(); //모달 끄기
     setImgUrl("");
     setRoomImg("");
   };
 
+  //방 만들기 취소
   const cancelFile = () => {
     addModal();
     setImgUrl("");
@@ -107,14 +116,16 @@ const AddRoomModal = ({ showModal, addModal }) => {
               />
             </InputBox>
             <BtnBox>
-              <Button shape="green-outline" size="150" _onClick={cancelFile}>
+              <LeftBtn>
+              <Button shape="green-outline"  _onClick={cancelFile}>
                 취소
               </Button>
-              <Btn>
-                <Button disabled={disabled} size="150" _onClick={saveFile}>
+              </LeftBtn>
+              <RightBtn>
+                <Button disabled={disabled}  _onClick={saveFile}>
                   만들기
                 </Button>
-              </Btn>
+              </RightBtn>
             </BtnBox>
           </ModalContent>
         </ModalContainer>
@@ -164,13 +175,19 @@ const ModalContent = styled.div`
 const ImageBox = styled.div`
   margin: 0 auto;
   padding-top: 46px;
+  ${({ theme }) => theme.device.mobile} {
+    padding-top: 0;
+  }
 `;
 
 const InputBox = styled.div`
   margin: 0 auto;
   width: 324px;
   ${({ theme }) => theme.device.mobile} {
-    width: 320px;
+    width: 100%;
+    max-width: 340px;
+    min-width: 270px;
+    padding: 0 10px 0 10px;
   }
 `;
 
@@ -179,10 +196,21 @@ const BtnBox = styled.div`
   width: 300px;
   margin: 0 auto;
   padding-bottom: 46px;
+  ${({ theme }) => theme.device.mobile} {
+    max-width: 280px;
+    min-width: 240px;
+    padding: 30px 10px 46px 10px;
+  }
 `;
 
-const Btn = styled.div`
+const LeftBtn = styled.div`
+  width: 100%;
+`;
+
+const RightBtn = styled.div`
+  width: 100%;
   margin-left: -1px;
 `;
+
 
 export default AddRoomModal;

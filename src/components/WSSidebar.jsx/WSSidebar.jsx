@@ -18,14 +18,14 @@ const WSSidebar = () => {
 
   return (
     <>
-      <Container sidebar={isShowSidebar}>
+      <Container sidebar={isShowSidebar} className="chat-sidebar">
         <Notice _onClick={handleSidebar} />
         {/* <RoomMember /> */}
         <Chat />
       </Container>
       {!isShowSidebar && (
         <IconBox _onClick={handleSidebar}>
-          <Icon icon="arrow-down" size="20px" color="var(--white)" />
+          <Icon icon="arrow-down" size="20px" color="var(--darkgrey)" />
         </IconBox>
       )}
     </>

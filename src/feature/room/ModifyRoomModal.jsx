@@ -13,14 +13,17 @@ import RoomInput from "./RoomInput";
 import { __editRoom } from "../../redux/modules/room";
 import ImageModule from "../../components/ImageModule";
 
+// 방 수정하기 모달
 const ModifyRoomModal = ({ roomId, showModModal, closeModModal }) => {
   const dispatch = useDispatch();
   const roomList = useSelector((state) => state.room.room);
   const isEdit = roomId ? true : false;
+  // 방 정보를 받아온다
   const _room = isEdit
     ? roomList && roomList.find((r) => r.roomId === roomId)
     : null;
   const [imgUrl, setImgUrl] = useState("");
+  // 받아온 방의 정보를 띄운다
   const [roomImg, setRoomImg] = useState(_room.roomImage);
   const [contents, setContents] = useState(
     _room
@@ -39,12 +42,14 @@ const ModifyRoomModal = ({ roomId, showModModal, closeModModal }) => {
       : ""
   );
 
+  // ImageModule의 함수, s3 이용해 url 형태로 파일 저장
   const getImgUrlFromS3 = async (callback, file) => {
     const result = await callback(file);
     setImgUrl("");
     setRoomImg(result);
   };
 
+  // 방 정보 바뀔 때마다 실행, 방 정보를 저장한다
   const changeHandler = (e) => {
     const { value, name } = e.target;
     setContents({ ...contents, [name]: value });
@@ -56,11 +61,14 @@ const ModifyRoomModal = ({ roomId, showModModal, closeModModal }) => {
     setRoomImg(e.target.value);
   };
 
+  // tag를 , 기준으로 나누어 list
   const tagList =
     typeof tagText.tag === "string" ? tagText.tag.split(",") : tagText.tag;
 
+  // 방 이름이 "" 라면 disabled
   const disabled = contents.roomName === "";
 
+  // 방 수정하기
   const modifyFile = () => {
     if (!disabled) {
       dispatch(__editRoom(roomId, contents, roomImg, tagList));
@@ -77,7 +85,6 @@ const ModifyRoomModal = ({ roomId, showModModal, closeModModal }) => {
     closeModModal();
   };
 
-
   return (
     <>
       {showModModal ? (
@@ -85,14 +92,14 @@ const ModifyRoomModal = ({ roomId, showModModal, closeModModal }) => {
           <ModalOverlay onClick={cancelFile}></ModalOverlay>
           <ModalContent>
             <InputBox>
-            <ImageBox>
-              <ImageModule
-                setRoomImg={setRoomImg}
-                roomPreview={roomImg}
-                getImgUrlFromS3={getImgUrlFromS3}
-                option="true"
-              />
-            </ImageBox>
+              <ImageBox>
+                <ImageModule
+                  setRoomImg={setRoomImg}
+                  roomPreview={roomImg}
+                  getImgUrlFromS3={getImgUrlFromS3}
+                  option="true"
+                />
+              </ImageBox>
               <RoomInput
                 name="roomName"
                 type="text"
@@ -116,14 +123,16 @@ const ModifyRoomModal = ({ roomId, showModModal, closeModModal }) => {
               />
             </InputBox>
             <BtnBox>
-              <Button shape="green-outline" size="150" _onClick={cancelFile}>
-                취소
-              </Button>
-              <Btn>
-                <Button disabled={disabled} size="150" _onClick={modifyFile}>
+              <LeftBtn>
+                <Button shape="green-outline" _onClick={cancelFile}>
+                  취소
+                </Button>
+              </LeftBtn>
+              <RightBtn>
+                <Button disabled={disabled} _onClick={modifyFile}>
                   수정
                 </Button>
-              </Btn>
+              </RightBtn>
             </BtnBox>
           </ModalContent>
         </ModalContainer>
@@ -178,13 +187,19 @@ const ModalContent = styled.div`
 const ImageBox = styled.div`
   margin: 0 auto;
   padding-top: 46px;
+  ${({ theme }) => theme.device.mobile} {
+    padding-top: 0;
+  }
 `;
 
 const InputBox = styled.div`
   margin: 0 auto;
   width: 324px;
   ${({ theme }) => theme.device.mobile} {
-    width: 320px;
+    width: 100%;
+    max-width: 340px;
+    min-width: 270px;
+    padding: 0 10px 0 10px;
   }
 `;
 
@@ -193,9 +208,19 @@ const BtnBox = styled.div`
   width: 300px;
   margin: 0 auto;
   padding-bottom: 46px;
+  ${({ theme }) => theme.device.mobile} {
+    max-width: 280px;
+    min-width: 240px;
+    padding: 30px 10px 40px 10px;
+  }
 `;
 
-const Btn = styled.div`
+const LeftBtn = styled.div`
+  width: 100%;
+`;
+
+const RightBtn = styled.div`
+  width: 100%;
   margin-left: -1px;
 `;
 

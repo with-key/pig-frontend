@@ -15,7 +15,6 @@ const LOAD_BUCKETS = "calendar/LOAD_BUCKETS";
 const SET_CURRENT_ID = "calendar/SET_CURRENT_ID";
 const SET_MODAL_ID = "calendar/SET_MODAL_ID";
 const LOAD_SCHEDULES = "calendar/LOAD_SCHEDULES";
-const LOAD_DETAIL = "calendar/LOAD_DETAIL";
 const LOAD_DAY_SCHEDULES = "calendar/LOAD_DAY_SCHEDULES";
 const ADD_SCHEDULE = "calendar/ADD_SCHEDULE";
 const EDIT_SCHEDULE = "calendar/EDIT_SCHEDULE";
@@ -23,8 +22,11 @@ const EDIT_SCHEDULE_BUCKET = "calendar/EDIT_SCHEDULE_BUCKET";
 const DELETE_SCHEDULE = "calendar/DELETE_SCHEDULE";
 const GET_TODO_BY_SCHEDULE = "calendar/GET_TODO_BY_SCHEDULE";
 const RESET_TIMELINE = "calendar/RESET_TIMELINE";
+const LOAD_CARD_BY_ID = "calendar/LOAD_CARD_BY_ID";
+const RESET_CARD = "calendar/RESET_CARD";
 
 // action creator
+export const resetCardTocalendar = createAction(RESET_CARD);
 const loadBuckets = createAction(LOAD_BUCKETS, (buckets, bucketOrders) => ({
   buckets,
   bucketOrders,
@@ -54,6 +56,10 @@ const getTodoBySchedule = createAction(GET_TODO_BY_SCHEDULE, (todos) => ({
   todos,
 }));
 export const resetTimeline = createAction(RESET_TIMELINE);
+
+export const loadCardByIdToCalendar = createAction(LOAD_CARD_BY_ID, (card) => ({
+  card,
+}));
 
 // thunk
 export const __loadBuckets =
@@ -126,7 +132,7 @@ export const __editScheduleBucket =
         cardId,
       ];
 
-      const { data } = await cardApi.editCardLocation(
+      await cardApi.editCardLocation(
         roomId,
         cardOrder,
         cardId,
@@ -178,8 +184,10 @@ const initialState = {
   scheduleList: [],
   currentList: [],
   currentScheduleId: null,
+  currentSchedule: {},
   currentTodos: [],
   modalId: null,
+  card: {},
 };
 
 // reducer
@@ -210,12 +218,15 @@ const calendar = handleActions(
         );
         draft.currentList = newAry;
       }),
+
     [ADD_SCHEDULE]: (state, action) =>
       produce(state, (draft) => {
         const { schedule } = action.payload;
         draft.modalId = schedule.cardId;
-        draft.scheduleList.push(action.payload.schedule);
+        draft.scheduleList.push(schedule);
+        draft.currentSchedule = schedule;
       }),
+
     [EDIT_SCHEDULE]: (state, action) =>
       produce(state, (draft) => {
         const { cardId, ...rest } = action.payload.scheduleObj;
@@ -225,6 +236,9 @@ const calendar = handleActions(
         for (const [key, value] of Object.entries(rest)) {
           draft.scheduleList[idx][key] = value;
         }
+        // 현재 모달에 띄어진 카드의 정보 업데이트
+        const newInfoKey = Object.keys(rest)[0];
+        draft.card[newInfoKey] = rest[newInfoKey];
       }),
     [EDIT_SCHEDULE_BUCKET]: (state, action) =>
       produce(state, (draft) => {
@@ -249,6 +263,17 @@ const calendar = handleActions(
     [RESET_TIMELINE]: (state, action) =>
       produce(action, (draft) => {
         Object.entries(initialState).forEach((ary) => (draft[ary[0]] = ary[1]));
+      }),
+
+    // 모달을 띄었을 때 cardId를 통해 1장의 카드 상세 정보 불러와서 모듈에 저장
+    [LOAD_CARD_BY_ID]: (state, { payload }) =>
+      produce(state, (draft) => {
+        draft.card = payload.card.result;
+      }),
+
+    [RESET_CARD]: (state, { payload }) =>
+      produce(state, (draft) => {
+        draft.card = {};
       }),
   },
   initialState

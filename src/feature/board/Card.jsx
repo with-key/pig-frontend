@@ -10,6 +10,8 @@ import CardModal from "../task/CardModal";
 import ModalForms from "../task/ModalForms";
 import Icon from "../../components/Icon";
 import flex from "../../themes/flex";
+import JoyrideContainer from "../../feature/tutorial/JoyrideContainer";
+import { modalSteps } from "../../feature/tutorial/tutorialSteps";
 
 // function
 import setDday from "../../functions/setDday";
@@ -20,19 +22,19 @@ import { __loadCardById, __deleteCard } from "../../redux/modules/board";
 
 const Card = ({ card, index, bucketId }) => {
   const dispatch = useDispatch();
+  const { roomId } = useParams();
+
+  //task
   const currentContent = useSelector((state) => state.board.card);
-  // const todosCnt = useSelector((state) => state.todos.todosCount);
-  const [showModal, setShowModal] = useState(false);
+  const tutorial = useSelector((state) => state.user.tutorial);
   const [modalContent, setModalContent] = useState({});
 
-  // 전역변수
-  const { roomId } = useParams();
+  // modal
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     setModalContent(currentContent);
   }, [currentContent]);
-
-  const dDay = setDday(card.endDate);
 
   const limitText = (text, limit) => {
     if (text) {
@@ -41,8 +43,28 @@ const Card = ({ card, index, bucketId }) => {
     return;
   };
 
+  // Joyride(튜토리얼)
+  const [isShowTutorial, setIsShowTutorial] = useState(false);
+
+  useEffect(() => {
+    if (
+      showModal &&
+      tutorial &&
+      tutorial["modal"] === true &&
+      isShowTutorial === false
+    ) {
+      setIsShowTutorial(true);
+    }
+  }, [tutorial]);
+
   return (
     <>
+      <JoyrideContainer
+        run={isShowTutorial}
+        setRun={setIsShowTutorial}
+        steps={modalSteps}
+        page="modal"
+      />
       <Draggable draggableId={card.cardId} index={index}>
         {(provided, snapshot) => {
           return (
@@ -88,7 +110,7 @@ const Card = ({ card, index, bucketId }) => {
                     {card.endDate}
                   </Text>
                   <Text type="body_4" color="notice">
-                    {dDay}
+                    {setDday(card.endDate)}
                   </Text>
                 </EndDate>
                 <CardStat>
@@ -113,15 +135,12 @@ const Card = ({ card, index, bucketId }) => {
       {Object.keys(modalContent).length !== 0 && (
         <CardModal showModal={showModal} setShowModal={setShowModal}>
           <ModalForms content={modalContent} source="board" />
-          <TodosHeader type="sub_2" color="black">
-            할 일
-          </TodosHeader>
           <Todos cardId={card.cardId} />
           <BtnBox>
             <Button
               type="button"
               shape="green-fill"
-              size="300"
+              size="200"
               _onClick={() => setShowModal(false)}
             >
               닫기
@@ -147,11 +166,6 @@ const Container = styled.div`
     border-radius: 4px;
     border: ${(props) => `1px solid ${props.theme.colors[props.bgColor]}`};
   }
-`;
-
-const TodosHeader = styled(Text)`
-  padding: 0 40px;
-  margin-bottom: 21px;
 `;
 
 const Dot = styled.div`
@@ -205,8 +219,8 @@ const StatCnt = styled.div`
 const BtnBox = styled.div`
   ${flex()};
   width: 100%;
-  margin-top: -10px;
-  margin-bottom: 40px;
+  margin-top: 30px;
+  margin-bottom: 30px;
 `;
 
 export default Card;

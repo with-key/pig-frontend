@@ -10,12 +10,10 @@ import flex from "../../themes/flex";
 import { Text } from "../../elem";
 
 // redux & api
-import { __loadBucket } from "../../redux/modules/board";
 import { __editScheduleBucket } from "../../redux/modules/calendar";
 
-const BucketSelect = ({ bucketId, cardId }) => {
+const BucketSelect = ({ bucketId, cardId, ...rest }) => {
   const { roomId } = useParams();
-
   const dispatch = useDispatch();
 
   const buckets = useSelector((state) => state.board.columns);
@@ -27,9 +25,6 @@ const BucketSelect = ({ bucketId, cardId }) => {
     bucketValues.filter((bucket) => bucket.bucketId === currentId)[0] ||
       bucketValues[0]
   );
-  useEffect(() => {
-    dispatch(__loadBucket(roomId));
-  }, [dispatch, roomId]);
 
   useEffect(() => {
     setTarget(
@@ -50,7 +45,7 @@ const BucketSelect = ({ bucketId, cardId }) => {
   return (
     <>
       {bucketValues.length !== 0 && target && (
-        <Select onClick={() => setIsShow((pre) => !pre)}>
+        <Select onClick={() => setIsShow((pre) => !pre)} {...rest}>
           <Text type="button" color="main">
             {target.bucketName ? target.bucketName : "제목 없음"}
           </Text>
@@ -80,7 +75,7 @@ const Select = styled.div`
   top: 0;
   left: 0;
   width: 100%;
-  height: 58px;
+  height: 48px;
   padding: 0 40px;
   border: none;
   border-bottom: 1px solid var(--line);
@@ -88,6 +83,10 @@ const Select = styled.div`
   cursor: pointer;
   z-index: var(--indexDrop);
   box-sizing: border-box;
+
+  ${({ theme }) => theme.device.mobile} {
+    height: 40px;
+  }
 `;
 
 const Options = styled.ul`

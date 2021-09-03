@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import styled from "styled-components";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { useParams } from "react-router";
@@ -23,8 +23,8 @@ import Icon from "../../components/Icon";
 
 const Bucket = ({ bucket, index, bucketCards, BucketCnt }) => {
   const dispatch = useDispatch();
-  const bucketName = "제목 없음";
-  const cardTitle = "눌러서 제목 수정";
+  const bucketName = "제목없는 버킷";
+  const cardTitle = "제목없는 카드";
   const initDate = moment().format("YYYY-MM-DD");
   const initColor = "blue";
 
@@ -33,18 +33,21 @@ const Bucket = ({ bucket, index, bucketCards, BucketCnt }) => {
   const bucketId = bucket.bucketId;
 
   // 카드생성 handler
-  const addCard = () => {
+  const addCard = useCallback(() => {
     dispatch(__createCard(roomId, bucketId, cardTitle, initDate, initColor));
-  };
+  }, [roomId, bucketId, initDate, dispatch]);
 
   // 버킷생성
-  const addBucket = () => {
+  const addBucket = useCallback(() => {
     dispatch(__createBucket(roomId, bucketName));
-  };
+  }, [roomId, dispatch]);
 
-  const editFunc = (key, value) => {
-    dispatch(__updateBucketTitle(roomId, { bucketId, [key]: value }));
-  };
+  const editFunc = useCallback(
+    (key, value) => {
+      dispatch(__updateBucketTitle(roomId, { bucketId, [key]: value }));
+    },
+    [roomId, bucketId, dispatch]
+  );
 
   return (
     <>
@@ -55,6 +58,7 @@ const Bucket = ({ bucket, index, bucketCards, BucketCnt }) => {
               {...provided.draggableProps}
               ref={provided.innerRef}
               isDragging={snap.isDragging}
+              className="buckets"
             >
               <BucketHeader {...provided.dragHandleProps}>
                 <BucketTitle>
@@ -108,7 +112,15 @@ const Bucket = ({ bucket, index, bucketCards, BucketCnt }) => {
                     </IconButton>
                   )}
 
-                  <IconButton onClick={addBucket}>
+                  <IconButton
+                    onClick={() => {
+                      if (BucketCnt > 6) {
+                        window.alert("버킷은 6개까지 생성 가능합니다.");
+                        return;
+                      }
+                      addBucket();
+                    }}
+                  >
                     <Icon icon="plus-lg" size="24px" color="var(--darkgrey)" />
                   </IconButton>
                 </BucketHeadBtns>
@@ -119,7 +131,7 @@ const Bucket = ({ bucket, index, bucketCards, BucketCnt }) => {
                 {(provided, snapshot) => {
                   return (
                     <>
-                      <AddCardBtn>
+                      <AddCardBtn className="add-card">
                         <Icon
                           icon="plus-circle"
                           size="20px"
@@ -159,7 +171,7 @@ const Bucket = ({ bucket, index, bucketCards, BucketCnt }) => {
 const Container = styled.div`
   flex-shrink: 0;
   width: 300px;
-  min-height: 900px;
+  min-height: 500px;
   background-color: #f5f5f5;
   border-radius: 4px;
   border: 1px solid var(--line);
@@ -167,17 +179,12 @@ const Container = styled.div`
 `;
 
 const BucketList = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  ${flex("start", "cetner", false)}
+  padding-bottom: 24px;
+  min-height: 600px;
   gap: 20px;
-  outline: none;
-  min-height: 900px;
-  /* position: relative; */
-  /* border: ${(props) => props.isDraggingOver && "1px solid #ff6b81"}; */
-  /* transition: background-color 0.2s ease; */
-  /* background-color: ${(props) => props.isDraggingOver && "#fbfbfb"}; */
   flex-grow: 1;
+  outline: none;
 `;
 const IconButton = styled.div`
   text-align: center;
@@ -191,7 +198,6 @@ const IconButton = styled.div`
 `;
 
 const AddCardBtn = styled.div`
-  /* ${IconButton}; */
   text-align: center;
   height: 20px;
   svg {
@@ -213,7 +219,7 @@ const BucketHeader = styled.div`
 const BucketHeaderBar = styled.div`
   width: 260px;
   height: 4px;
-  background-color: ${(props) => props.theme.colors["mint"]};
+  background-color: var(--main);
   margin: 0 auto;
   border-radius: 0px 4px 4px 0px;
   margin-bottom: 14px;
@@ -229,19 +235,3 @@ const BucketHeadBtns = styled.div`
 `;
 
 export default Bucket;
-
-// 👇 최적화 - 지금당장은 필요없음
-// class InnerList extends React.Component {
-//   shouldComponentUpdate(nextProps) {
-//     if (nextProps.cards === this.props.cards) {
-//       return false;
-//     }
-//     return true;
-//   }
-
-//   render() {
-//     return this.props.cards.map((card, index) => (
-//       <Task key={card.id} card={card} index={index} />
-//     ));
-//   }
-// }

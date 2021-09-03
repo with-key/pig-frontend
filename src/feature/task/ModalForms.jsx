@@ -19,6 +19,7 @@ import { resetTodos } from "../../redux/modules/todos";
 import { __editCardInfos, resetCard } from "../../redux/modules/board";
 import DateInput from "./DateInput";
 import BucketSelect from "../timeline/BucketSelect";
+import { resetCardTocalendar } from "../../redux/modules/calendar";
 
 /**
  *
@@ -28,12 +29,12 @@ import BucketSelect from "../timeline/BucketSelect";
 
 const ModalForms = ({ content, source }) => {
   const dispatch = useDispatch();
-  // 전역변수
   const { roomId } = useParams();
 
   useEffect(() => {
     return () => {
       dispatch(resetCard());
+      dispatch(resetCardTocalendar());
       dispatch(resetTodos());
     };
   }, [dispatch]);
@@ -96,7 +97,7 @@ const ModalForms = ({ content, source }) => {
             value={content.desc}
             shape="textarea"
             saveFunc={editFunc}
-            limit={"제한없음"}
+            limit={200}
           />
         </TodoContainer>
       </DescContainer>
@@ -105,14 +106,18 @@ const ModalForms = ({ content, source }) => {
 };
 
 const Container = styled.div`
-  padding: 40px;
+  padding: 20px;
   position: relative;
+
+  ${({ theme }) => theme.device.mobile} {
+    padding: 20px;
+  }
 `;
 
 const ModalHeader = styled.div`
   ${flex("start", "center")};
   gap: 10px;
-  padding: 10px 0 0 0;
+  padding: 20px 0 0 0;
   margin-top: ${(props) => props.source === "calendar" && "30px"};
   margin-bottom: 24px;
 `;
@@ -123,10 +128,13 @@ const Title = styled.h1`
 `;
 
 const DescContainer = styled.div`
-  width: 480px;
+  width: 100%;
   height: 180px;
   padding: 10px;
   border: 1px solid var(--line);
+  ${({ theme }) => theme.device.mobile} {
+    width: 100%;
+  }
 `;
 
 const DueDate = styled.div`

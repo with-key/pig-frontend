@@ -1,40 +1,44 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-
+import flex from "../themes/flex";
 import { Text } from "./index";
 
-const MemberImg = ({ memberStatus, members, children, ...rest }) => {
+const MemberImg = ({ memberStatus }) => {
   const [showAllMember, setShowAllMember] = useState(false);
 
   useEffect(() => {
-    if (members.length > 4) {
+      // member 수가 3보다 클 때 잘라서 화면에 표기
+    if (memberStatus.length > 3) {
       setShowAllMember(false);
     } else {
       setShowAllMember(true);
     }
-  }, []);
+  }, [memberStatus.length]);
+
   return (
     <>
-
       <MemberImgBox>
-        {/* members배열 나중에 membersImg로 바꿔주기 */}
-        {showAllMember
+        {memberStatus.length !== 0 && showAllMember
           ? memberStatus.map((member, idx) => {
               return (
                 <ProfileImg
                   style={{
-                    left: (members.length - 1 - idx) * 6,
+                    left: (memberStatus.length - 1 - idx) * 6,
                   }}
                   key={member.userId}
                   src={member.avatar}
-                  bgColor={member.avatar==="" ? member.color : ""}
+                  bgColor={member.avatar === "" ? member.color : ""}
                   border={memberStatus.length > 1 ? "--white" : ""}
                 >
-                 {member.avatar==="" && <Nickname>{member.nickname[0].toLowerCase()}</Nickname>}
+                   {/* 멤버의 아바타 이미지 없으면 닉네임으로 표시 */}
+                  {member.avatar === "" && (
+                    <Nickname>{member.memberName[0].toLowerCase()}</Nickname>
+                  )}
                 </ProfileImg>
               );
             })
           : memberStatus.slice(0, 3).map((member, idx) => {
+            // 모든 멤버 표시 x => 3명만 표시
               return (
                 <ProfileImg
                   style={{
@@ -43,14 +47,17 @@ const MemberImg = ({ memberStatus, members, children, ...rest }) => {
                   idx={idx}
                   key={member.userId}
                   src={member.avatar}
-                  bgColor={member.avatar==="" ?  member.color : ""}
+                  bgColor={member.avatar === "" ? member.color : ""}
                   border={"--white"}
                 >
-                  {member.avatar==="" && <Nickname>{member.nickname[0].toLowerCase()}</Nickname>}
+                  {/* 멤버의 아바타 이미지 없으면 닉네임으로 표시 */}
+                  {member.avatar === "" && (
+                    <Nickname>{member.memberName[0].toLowerCase()}</Nickname>
+                  )}
                 </ProfileImg>
               );
             })}
-        {!showAllMember && (
+        {memberStatus.length !== 0 && !showAllMember && (
           <MemberCount>
             <Text type="body_3" color="grey">
               +{memberStatus.length - 3}
@@ -63,29 +70,29 @@ const MemberImg = ({ memberStatus, members, children, ...rest }) => {
 };
 
 const ProfileImg = styled.div`
+  ${flex()}
   position: relative;
-  display: flex;
   flex-shrink: 0;
-  right: 20px;
   width: 30px;
   height: 30px;
-  margin: 0;
   box-sizing: content-box;
   background-size: cover;
   background-position: center center;
-  ${(props) => (props.bgColor && `background-color: ${props.theme.colors[props.bgColor]};`)}
-  background-image: url("${(props) => props.src}");
-  border: 1px solid var(${(props) => props.border});
+  ${(props) =>
+    props.bgColor && `background-color: ${props.theme.colors[props.bgColor]};`}
+  background-image: url(${(props) => props.src});
+  border: 1px solid var(--white);
   border-radius: 50%;
+  ${({ theme }) => theme.device.mobile} {
+    width: 20px;
+    height: 20px;
+    font-size: 1rem;
+  }
 `;
 
-const Nickname = styled.span`
-  margin: 0 auto;
+const Nickname = styled.div`
   color: var(--white);
-  font-size: 17px;
-  font-weight: 800;
-  line-height: 30px;
-  vertical-align: middle;
+  font-size: 1.4rem;
 `;
 
 const MemberImgBox = styled.div`
@@ -98,15 +105,5 @@ const MemberImgBox = styled.div`
   margin-right: 5px;
 `;
 
-const MemberCount = styled.div`
-  position: relative;
-  left: -7px;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  width: 30px;
-  height: 30px;
-`;
+const MemberCount = styled.div``;
 export default MemberImg;
